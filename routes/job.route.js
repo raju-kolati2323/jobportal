@@ -8,7 +8,7 @@ router.route("/post").post(isAuthenticated, postJob);
 router.route("/get").get(getAllJobs);
 router.route("/getadminjobs").get(isAuthenticated, getAdminJobs);
 router.route("/get/:id").get(getJobById);
-router.route("/delete/:id").delete( deleteJob);
+router.route("/delete/:id").delete(deleteJob);
 router.route("/update/:id").patch(isAuthenticated, singleUpload, updateJob);
 
 export default router;
