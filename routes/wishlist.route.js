@@ -4,8 +4,8 @@ import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const router = express.Router();
 
-router.post('/add', addToWishlist);
+router.post('/add',isAuthenticated, addToWishlist);
 router.delete('/remove/:itemId',isAuthenticated, removeFromWishlist);
-router.get('/:userId', getWishlist);
+router.get('/:userId',isAuthenticated, getWishlist);
 
 export default router;
