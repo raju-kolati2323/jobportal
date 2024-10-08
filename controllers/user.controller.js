@@ -160,6 +160,7 @@ export const login = async (req, res) => {
       .json({
         message: `Welcome back ${user.fullname}`,
         user,
+        token,
         success: true,
       });
   } catch (error) {
@@ -169,6 +170,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    localStorage.removeItem("token");
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
       message: "Logged out successfully.",
       success: true,
