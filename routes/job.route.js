@@ -4,11 +4,11 @@ import { getAdminJobs, getAllJobs, getJobById, postJob, deleteJob, updateJob } f
 import { singleUpload } from "../middlewares/mutler.js";
 const router = express.Router();
 
-router.route("/post").post(isAuthenticated, postJob);
+router.route("/post").post( postJob);
 router.route("/get").get(getAllJobs);
 router.route("/getadminjobs").get(isAuthenticated, getAdminJobs);
 router.route("/get/:id").get(getJobById);
 router.route("/delete/:id").delete(deleteJob);
-router.route("/update/:id").patch(isAuthenticated, singleUpload, updateJob);
+router.route("/update/:id").patch( singleUpload, updateJob);
 
 export default router;
