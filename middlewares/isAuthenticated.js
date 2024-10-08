@@ -25,18 +25,18 @@ import jwt from "jsonwebtoken";
 // }
 
 const isAuthenticated = (req, res, next) => {
-    const token = req.cookies.token; // or however you're sending the token
-
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
     if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized", success: false });
     }
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-        req.id = decoded.userId; // Assuming you store userId in token
+        console.log("Token:", token);
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        req.id = decoded.userId; // Ensure the user ID is attached to the request
         next();
-    });
+    } catch (error) {
+        return res.status(401).json({ message: "Unauthorized", success: false });
+    }
 };
 export default isAuthenticated;
