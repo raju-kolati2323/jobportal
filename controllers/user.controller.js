@@ -174,7 +174,7 @@ export const logout = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 };
 
