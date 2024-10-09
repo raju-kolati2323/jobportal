@@ -75,12 +75,12 @@ export const updateCompany = async (req, res) => {
     const { name, description, website, location } = req.body;
 
     const file = req.file;
-    if (!file) {
-      return res.status(400).json({
-        message: "company logo is missing",
-        success: false,
-      });
-    }
+    // if (!file) {
+    //   return res.status(400).json({
+    //     message: "company logo is missing",
+    //     success: false,
+    //   });
+    // }
     // idhar cloudinary ayega
     const fileUri = getDataUri(file);
     const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
