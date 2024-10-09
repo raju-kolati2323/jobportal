@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 const corsOptions = {
-    origin:['http://localhost:5173','https://jobportal-02.web.app/'],
+    origin:["http://localhost:5173","https://jobportal-03.web.app"],
     credentials:true
 }
 
