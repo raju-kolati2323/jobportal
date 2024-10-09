@@ -74,8 +74,6 @@ export const updateCompany = async (req, res) => {
   try {
     const { name, description, website, location } = req.body;
 
-    const updateData = { name, description, website, location };
-
     const file = req.file;
     // if (!file) {
     //   return res.status(400).json({
@@ -84,16 +82,11 @@ export const updateCompany = async (req, res) => {
     //   });
     // }
     // idhar cloudinary ayega
-    if (req.file) {
-      const fileUri = getDataUri(req.file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-      const logo = cloudResponse.secure_url;
+    const fileUri = getDataUri(file);
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+    const logo = cloudResponse.secure_url;
 
-      updateData.logo = logo;
-    } else {
-      updateData.logo = company.logo; // Retain the existing logo URL
-    }
-
+    const updateData = { name, description, website, location, logo };
 
     const company = await Company.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
