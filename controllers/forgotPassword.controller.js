@@ -34,8 +34,14 @@ export const forgotPassword = async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_ID_FORGOT,
     to: email,
-    subject: "Your OTP for password reset",
-    text: `Your OTP for password reset is: ${otp}. It is valid for 15 minutes.`
+    subject: "OTP for Job Portal password reset",
+    html: `    
+        <div style="border: 1px solid #ccc; border-radius: 5px; padding: 20px; max-width: 600px; font-family: Arial, sans-serif;">
+          <h2 style="color: #333;"><u>OTP for Password Reset:</u></h2>
+          <p><strong>Email:</strong> ${email}</p>
+          <p> Your OTP for password reset is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>
+        </div>
+      `
   };
 
   try {
