@@ -1,8 +1,8 @@
 // backend/controllers/forgotPassword.controller.js
 import { User } from "../models/user.model.js";
-import { ForgotPassword} from "../models/forgotPassword.model.js"
+import { ForgotPassword } from "../models/forgotPassword.model.js";
 import nodemailer from "nodemailer";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 
 // Setup Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -15,12 +15,12 @@ const transporter = nodemailer.createTransport({
 
 // Request forgot password
 export const forgotPassword = async (req, res) => {
-  const { email, role } = req.body;
+  const { email } = req.body;
 
-  // Validate user email and role
-  const user = await User.findOne({ email, role });
+  // Validate user email
+  const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({ message: "User not found with this email and role." });
+    return res.status(404).json({ message: "User not found with this email." });
   }
 
   // Generate OTP
@@ -39,7 +39,7 @@ export const forgotPassword = async (req, res) => {
         <div style="border: 1px solid #ccc; border-radius: 5px; padding: 20px; max-width: 600px; font-family: Arial, sans-serif;">
           <h2 style="color: #333;"><u>OTP for Password Reset:</u></h2>
           <p><strong>Email:</strong> ${email}</p>
-          <p> Your OTP for password reset is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>
+          <p>Your OTP for password reset is: <strong>${otp}</strong>. It is valid for 5 minutes.</p>
         </div>
       `
   };
@@ -55,12 +55,12 @@ export const forgotPassword = async (req, res) => {
 
 // Verify OTP and reset password
 export const verifyOtpAndResetPassword = async (req, res) => {
-  const { email, role, otp, newPassword } = req.body;
+  const { email, otp, newPassword } = req.body;
 
-  // Validate user email and role
-  const user = await User.findOne({ email, role });
+  // Validate user email
+  const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({ message: "User not found with this email and role." });
+    return res.status(404).json({ message: "User not found with this email." });
   }
 
   // Find the OTP entry
@@ -72,7 +72,7 @@ export const verifyOtpAndResetPassword = async (req, res) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   // Update the user password
-  user.password = hashedPassword; // Make sure to hash this in your user model
+  user.password = hashedPassword; // Ensure to hash this in your user model
   await user.save();
 
   // Delete OTP entry
