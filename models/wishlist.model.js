@@ -8,6 +8,12 @@ const WishlistSchema = new mongoose.Schema({
     location: { type: String, required: true },
     jobType: { type: String, required: true },
     position: { type: String, required: true },
+    requirements: [{
+        type: String
+    }],
+    qualification:{
+        type:String,
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

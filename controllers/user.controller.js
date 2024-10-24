@@ -179,7 +179,7 @@ export const logout = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, bio, skills } = req.body;
+    const { fullname, email, phoneNumber, bio, skills, highestQualification } = req.body;
     const file = req.file;
 
     const userId = req.id; // Get user ID from the authenticated request
@@ -197,7 +197,12 @@ export const updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-
+    if (highestQualification) {
+      // Check if highestQualification already exists
+      if (user.profile.highestQualification !== highestQualification) {
+        user.profile.highestQualification = highestQualification; // Update if changed
+      }
+    }
     if (skills) {
       user.profile.skills = skills.split(",").map(skill => skill.trim()); // Save skills as an array
     }
@@ -210,6 +215,7 @@ export const updateProfile = async (req, res) => {
       user.profile.resumeOriginalName = file.originalname; // Save the original file name
     }
 
+    user.updatedAt = new Date();
     await user.save();
 
     return res.status(200).json({
@@ -221,6 +227,7 @@ export const updateProfile = async (req, res) => {
         phoneNumber: user.phoneNumber,
         role: user.role,
         profile: user.profile,
+        updatedAt: user.updatedAt,
       },
       success: true,
     });

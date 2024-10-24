@@ -8,6 +8,7 @@ import companyRoute from "./routes/company.route.js";
 import jobRoute from "./routes/job.route.js";
 import applicationRoute from "./routes/application.route.js";
 import wishlistRoute from "./routes/wishlist.route.js";
+import passwordRouter from "./routes/forgotPassword.route.js";
 
 
 dotenv.config({});
@@ -20,6 +21,14 @@ app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 const corsOptions = {
     origin:["http://localhost:5173","https://jobportal-03.web.app"],
+    // methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+    // allowedHeaders: [
+    //   "Content-Type",
+    //   "Authorization",
+    //   "Cache-Control",
+    //   "Expires",
+    //   "Pragma",
+    // ],
     credentials:true
 }
 
@@ -33,8 +42,7 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 app.use("/api/v1/wishlist", wishlistRoute);
-
-
+app.use("/api/v1/user", passwordRouter)
 
 app.listen(PORT,()=>{
     connectDB();

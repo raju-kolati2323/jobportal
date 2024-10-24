@@ -2,7 +2,7 @@ import { Wishlist } from "../models/wishlist.model.js";
 
 // Add item to wishlist
 export const addToWishlist = async (req, res) => {
-    const { title, description, salary, location, jobType, position, company, jobId, userId} = req.body;
+    const { title, description, salary, location, jobType, position, company, jobId, userId, requirements, qualification} = req.body;
     // const userId = req.user._id;
 
     try {
@@ -17,7 +17,9 @@ export const addToWishlist = async (req, res) => {
             position,
             company,
             jobId,
-            userId
+            userId,
+            requirements,
+            qualification
         });
 
         await newWishlistItem.save();

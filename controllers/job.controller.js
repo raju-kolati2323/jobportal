@@ -8,6 +8,7 @@ export const postJob = async (req, res) => {
     const {
       title,
       description,
+      qualification,
       requirements,
       salary,
       location,
@@ -37,6 +38,13 @@ export const postJob = async (req, res) => {
         message: "Requirements are missing.",
         success: false,
       });
+    }
+
+    if(!qualification){
+      return res.status(400).json({
+        message: "Qualification is missing",
+        success: false,
+      })
     }
 
     if (!salary) {
@@ -90,6 +98,7 @@ export const postJob = async (req, res) => {
     const job = await Job.create({
       title,
       description,
+      qualification,
       requirements: requirements.split(","),
       salary: Number(salary),
       location,

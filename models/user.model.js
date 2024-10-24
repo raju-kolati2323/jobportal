@@ -22,9 +22,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         enum:['student','recruiter'],
         required:true
-    },
+    }, 
     profile:{
         bio:{type:String},
+        highestQualification:{type:String},    
         skills:[{type:String}],
         resume:{type:String}, // URL to resume file
         resumeOriginalName:{type:String},
