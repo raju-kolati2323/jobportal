@@ -6,7 +6,7 @@ const isAuthenticated = (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized", success: false });
     }
 
-        console.log("Token:", token);
+        // console.log("Token:", token);
     try {
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         req.id = decoded.userId; // Ensure the user ID is attached to the request

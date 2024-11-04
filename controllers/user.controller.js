@@ -179,7 +179,7 @@ export const logout = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { fullname, email, phoneNumber, bio, skills, highestQualification } = req.body;
+    const { fullname, email, phoneNumber, bio, skills, highestQualification, workExperience, projects, socialMediaAccounts } = req.body;
     const file = req.file;
 
     const userId = req.id; // Get user ID from the authenticated request
@@ -206,7 +206,28 @@ export const updateProfile = async (req, res) => {
     if (skills) {
       user.profile.skills = skills.split(",").map(skill => skill.trim()); // Save skills as an array
     }
+    if (workExperience) {
+      user.profile.workExperience =  workExperience.map(workExp =>({
+        companyName:workExp.companyName,
+        role:workExp.role,
+        years:workExp.years,
+        months:workExp.months,
+      }))  
+    }
 
+    if (projects) {
+      user.profile.projects = projects.map(project => ({
+        title: project.title,
+        description:project.description,
+        duration: project.duration,
+      }));
+    }
+    if (socialMediaAccounts) {
+      if (socialMediaAccounts.linkedIn) user.profile.socialMediaAccounts.linkedIn = socialMediaAccounts.linkedIn;
+      if (socialMediaAccounts.instagram) user.profile.socialMediaAccounts.instagram = socialMediaAccounts.instagram;
+      if (socialMediaAccounts.github) user.profile.socialMediaAccounts.github = socialMediaAccounts.github;
+      if (socialMediaAccounts.twitter) user.profile.socialMediaAccounts.twitter = socialMediaAccounts.twitter;
+    }
     // Only upload new file if provided
     if (file) {
       const fileUri = getDataUri(file);

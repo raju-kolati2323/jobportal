@@ -153,9 +153,14 @@ export const getAllJobs = async (req, res) => {
   try {
     const keyword = req.query.keyword || "";
     const query = {
-      $or: [
-        { title: { $regex: keyword, $options: "i" } },
-        { description: { $regex: keyword, $options: "i" } },
+      $and: [
+        { $or: [{ status: "active" }, { status: { $exists: false } }] },
+        {
+          $or: [
+            { title: { $regex: keyword, $options: "i" } },
+            { description: { $regex: keyword, $options: "i" } },
+          ],
+        },
       ],
     };
     const jobs = await Job.find(query)
@@ -258,3 +263,28 @@ export const updateJob = async (req, res) => {
     });
   }
 };
+
+export const toggleJobStatus = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found.", success: false });
+    }
+
+    // Toggle between 'active' and 'inactive' status
+    job.status = job.status === "active" ? "inactive" : "active";
+    await job.save();
+
+    return res.status(200).json({
+      message: `Job status updated to ${job.status}.`,
+      success: true,
+      job
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
