@@ -1,4 +1,3 @@
-// backend/controllers/forgotPassword.controller.js
 import { User } from "../models/user.model.js";
 import { ForgotPassword } from "../models/forgotPassword.model.js";
 import nodemailer from "nodemailer";

@@ -206,27 +206,66 @@ export const updateProfile = async (req, res) => {
     if (skills) {
       user.profile.skills = skills.split(",").map(skill => skill.trim()); // Save skills as an array
     }
-    if (workExperience) {
-      user.profile.workExperience =  workExperience.map(workExp =>({
-        companyName:workExp.companyName,
-        role:workExp.role,
-        years:workExp.years,
-        months:workExp.months,
-      }))  
+    // Update workExperience array
+    if (workExperience && Array.isArray(workExperience)) {
+      workExperience.forEach(newExperience => {
+        const existingExperience = user.profile.workExperience.find(
+          exp => exp.companyName === newExperience.companyName
+        );
+
+        if (existingExperience) {
+          // Update the existing experience
+          existingExperience.companyName=newExperience.companyName;
+          existingExperience.role = newExperience.role;
+          existingExperience.years = newExperience.years;
+          existingExperience.months = newExperience.months;
+        } else {
+          // Add new experience
+          user.profile.workExperience.push({
+            companyName: newExperience.companyName,
+            role: newExperience.role,
+            years: newExperience.years,
+            months: newExperience.months,
+          });
+        }
+      });
     }
 
-    if (projects) {
-      user.profile.projects = projects.map(project => ({
-        title: project.title,
-        description:project.description,
-        duration: project.duration,
-      }));
+    // Update projects array
+    if (projects && Array.isArray(projects)) {
+      projects.forEach(newProject => {
+        const existingProject = user.profile.projects.find(
+          project => project.title === newProject.title
+        );
+
+        if (existingProject) {
+          // Update the existing project
+          existingProject.title=newProject.title;
+          existingProject.description = newProject.description;
+          existingProject.duration = newProject.duration;
+          existingProject.projectLink = newProject.projectLink;
+          existingProject.technologiesUsed = Array.isArray(newProject.technologiesUsed)
+            ? newProject.technologiesUsed.map(tech => tech.trim())
+            : [];
+        } else {
+          // Add new project
+          user.profile.projects.push({
+            title: newProject.title,
+            description: newProject.description,
+            duration: newProject.duration,
+            projectLink: newProject.projectLink,
+            technologiesUsed: Array.isArray(newProject.technologiesUsed)
+              ? newProject.technologiesUsed.map(tech => tech.trim())
+              : [],
+          });
+        }
+      });
     }
     if (socialMediaAccounts) {
       if (socialMediaAccounts.linkedIn) user.profile.socialMediaAccounts.linkedIn = socialMediaAccounts.linkedIn;
       if (socialMediaAccounts.instagram) user.profile.socialMediaAccounts.instagram = socialMediaAccounts.instagram;
       if (socialMediaAccounts.github) user.profile.socialMediaAccounts.github = socialMediaAccounts.github;
-      if (socialMediaAccounts.twitter) user.profile.socialMediaAccounts.twitter = socialMediaAccounts.twitter;
+      if (socialMediaAccounts.personalPortfolio) user.profile.socialMediaAccounts.personalPortfolio = socialMediaAccounts.personalPortfolio;
     }
     // Only upload new file if provided
     if (file) {

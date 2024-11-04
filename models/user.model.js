@@ -43,10 +43,12 @@ const userSchema = new mongoose.Schema({
         }
     ],
         projects: [
-            {
+            {   
                 title: { type: String },
                 description:{type: String},
-                duration: { type: String }
+                duration: { type: String },
+                projectLink:{type:String},
+                technologiesUsed:[{type:String}]
             }
         ],
         socialMediaAccounts: {
