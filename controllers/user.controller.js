@@ -300,6 +300,72 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+export const deleteWorkExperience = async (req, res) => {
+  try {
+    const userId = req.id; // Extract user ID from authenticated request
+    const { companyName } = req.params; // Get companyName from URL parameter
+
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+
+    // Filter out the work experience with the specified companyName
+    user.profile.workExperience = user.profile.workExperience.filter(
+      (exp) => exp.companyName !== companyName
+    );
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Work experience deleted successfully.",
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error.",
+      success: false,
+    });
+  }
+};
+
+export const deleteProject = async (req, res) => {
+  try {
+    const userId = req.id; // Extract user ID from authenticated request
+    const { title } = req.params; // Get project title from URL parameter
+
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+
+    // Filter out the project with the specified title
+    user.profile.projects = user.profile.projects.filter(
+      (project) => project.title !== title
+    );
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Project deleted successfully.",
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error.",
+      success: false,
+    });
+  }
+};
+
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password'); // Exclude password field
