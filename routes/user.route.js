@@ -9,8 +9,8 @@ router.route("/register").post(singleUpload,register);
 router.route("/login").post(login);
 router.route("/logout").get(logout);
 router.route("/profile/update").patch(isAuthenticated,singleUpload,updateProfile);
-router.route("/profile/workExperience/:companyName").delete(isAuthenticated, deleteWorkExperience);
-router.route("/profile/project/:title").delete(isAuthenticated, deleteProject);
+router.route("/profile/workExperience/:id").delete(isAuthenticated, deleteWorkExperience);
+router.route("/profile/project/:id").delete(isAuthenticated, deleteProject);
 router.route("/").get( getAllUsers);
 
 export default router;

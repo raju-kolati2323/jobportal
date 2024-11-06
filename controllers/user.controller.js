@@ -303,7 +303,7 @@ export const updateProfile = async (req, res) => {
 export const deleteWorkExperience = async (req, res) => {
   try {
     const userId = req.id; // Extract user ID from authenticated request
-    const { companyName } = req.params; // Get companyName from URL parameter
+    const { id } = req.params; // Get companyName from URL parameter
 
     let user = await User.findById(userId);
     if (!user) {
@@ -315,7 +315,7 @@ export const deleteWorkExperience = async (req, res) => {
 
     // Filter out the work experience with the specified companyName
     user.profile.workExperience = user.profile.workExperience.filter(
-      (exp) => exp.companyName !== companyName
+      (exp) => exp._id.toString()!== id
     );
 
     await user.save();
@@ -336,7 +336,7 @@ export const deleteWorkExperience = async (req, res) => {
 export const deleteProject = async (req, res) => {
   try {
     const userId = req.id; // Extract user ID from authenticated request
-    const { title } = req.params; // Get project title from URL parameter
+    const { id } = req.params; // Get project title from URL parameter
 
     let user = await User.findById(userId);
     if (!user) {
@@ -348,7 +348,7 @@ export const deleteProject = async (req, res) => {
 
     // Filter out the project with the specified title
     user.profile.projects = user.profile.projects.filter(
-      (project) => project.title !== title
+      (project) => project._id.toString()!== id
     );
 
     await user.save();
