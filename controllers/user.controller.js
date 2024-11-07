@@ -54,7 +54,9 @@ export const register = async (req, res) => {
     if (file) {
       try {
         const fileUri = getDataUri(file);
-        cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+        cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+          resource_type: "auto",
+        });
       } catch (uploadError) {
         return res.status(500).json({
           message: "File upload failed",
@@ -180,7 +182,7 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills, highestQualification, workExperience, projects, socialMediaAccounts } = req.body;
-    const file = req.file;
+    const { profilePhoto, resume } = req.files || {}; // Destructure profilePhoto and resume from req.files
 
     const userId = req.id; // Get user ID from the authenticated request
     let user = await User.findById(userId);
@@ -197,16 +199,10 @@ export const updateProfile = async (req, res) => {
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-    if (highestQualification) {
-      // Check if highestQualification already exists
-      if (user.profile.highestQualification !== highestQualification) {
-        user.profile.highestQualification = highestQualification; // Update if changed
-      }
-    }
-    if (skills) {
-      user.profile.skills = skills.split(",").map(skill => skill.trim()); // Save skills as an array
-    }
-    // Update workExperience array
+    if (highestQualification) user.profile.highestQualification = highestQualification;
+    if (skills) user.profile.skills = skills.split(",").map(skill => skill.trim()); // Save skills as an array
+
+    // Handle workExperience and projects update (same logic as you already have)
     if (workExperience && Array.isArray(workExperience)) {
       workExperience.forEach(newExperience => {
         const existingExperience = user.profile.workExperience.find(
@@ -214,13 +210,11 @@ export const updateProfile = async (req, res) => {
         );
 
         if (existingExperience) {
-          // Update the existing experience
-          existingExperience.companyName=newExperience.companyName;
+          existingExperience.companyName = newExperience.companyName;
           existingExperience.role = newExperience.role;
           existingExperience.years = newExperience.years;
           existingExperience.months = newExperience.months;
         } else {
-          // Add new experience
           user.profile.workExperience.push({
             companyName: newExperience.companyName,
             role: newExperience.role,
@@ -231,7 +225,6 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Update projects array
     if (projects && Array.isArray(projects)) {
       projects.forEach(newProject => {
         const existingProject = user.profile.projects.find(
@@ -239,8 +232,7 @@ export const updateProfile = async (req, res) => {
         );
 
         if (existingProject) {
-          // Update the existing project
-          existingProject.title=newProject.title;
+          existingProject.title = newProject.title;
           existingProject.description = newProject.description;
           existingProject.duration = newProject.duration;
           existingProject.projectLink = newProject.projectLink;
@@ -248,7 +240,6 @@ export const updateProfile = async (req, res) => {
             ? newProject.technologiesUsed.map(tech => tech.trim())
             : [];
         } else {
-          // Add new project
           user.profile.projects.push({
             title: newProject.title,
             description: newProject.description,
@@ -261,18 +252,43 @@ export const updateProfile = async (req, res) => {
         }
       });
     }
+
     if (socialMediaAccounts) {
       if (socialMediaAccounts.linkedIn) user.profile.socialMediaAccounts.linkedIn = socialMediaAccounts.linkedIn;
       if (socialMediaAccounts.instagram) user.profile.socialMediaAccounts.instagram = socialMediaAccounts.instagram;
       if (socialMediaAccounts.github) user.profile.socialMediaAccounts.github = socialMediaAccounts.github;
       if (socialMediaAccounts.personalPortfolio) user.profile.socialMediaAccounts.personalPortfolio = socialMediaAccounts.personalPortfolio;
     }
-    // Only upload new file if provided
-    if (file) {
-      const fileUri = getDataUri(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-      user.profile.resume = cloudResponse.secure_url; // Save the cloudinary URL
-      user.profile.resumeOriginalName = file.originalname; // Save the original file name
+
+    // Handle profile photo upload
+    if (profilePhoto && profilePhoto[0]) {
+      try {
+        const fileUri = getDataUri(profilePhoto[0]);
+        const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
+        user.profile.profilePhoto = cloudResponse.secure_url;
+      } catch (uploadError) {
+        return res.status(500).json({
+          message: "Error uploading profile photo to Cloudinary.",
+          success: false,
+          error: uploadError.message,
+        });
+      }
+    }
+
+    // Handle resume upload
+    if (resume && resume[0]) {
+      try {
+        const fileUri = getDataUri(resume[0]);
+        const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
+        user.profile.resume = cloudResponse.secure_url;
+        user.profile.resumeOriginalName = resume[0].originalname;
+      } catch (uploadError) {
+        return res.status(500).json({
+          message: "Error uploading resume to Cloudinary.",
+          success: false,
+          error: uploadError.message,
+        });
+      }
     }
 
     user.updatedAt = new Date();
@@ -292,13 +308,14 @@ export const updateProfile = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    console.error(error);
     return res.status(500).json({
       message: "Internal server error.",
       success: false,
     });
   }
 };
+
 
 export const deleteWorkExperience = async (req, res) => {
   try {
