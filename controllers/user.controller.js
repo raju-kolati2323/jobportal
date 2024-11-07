@@ -261,7 +261,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // Handle profile photo upload
-    if (profilePhoto && profilePhoto[0]) {
+    if (profilePhoto[0]) {
       try {
         const fileUri = getDataUri(profilePhoto[0]);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
@@ -276,7 +276,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // Handle resume upload
-    if (resume && resume[0]) {
+    if (resume[0]) {
       try {
         const fileUri = getDataUri(resume[0]);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
