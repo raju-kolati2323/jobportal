@@ -181,10 +181,11 @@ export const logout = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
+    console.log("Received files:", req.files);
     const { fullname, email, phoneNumber, bio, skills, highestQualification, workExperience, projects, socialMediaAccounts } = req.body;
-    const { profilePhoto, resume } = req.files || {}; // Destructure profilePhoto and resume from req.files
+    const { profilePhoto, resume } = req.files || {};
 
-    const userId = req.id; // Get user ID from the authenticated request
+    const userId = req.id;
     let user = await User.findById(userId);
 
     if (!user) {
@@ -261,14 +262,26 @@ export const updateProfile = async (req, res) => {
     }
 
     // Handle profile photo upload
-    if (profilePhoto[0]) {
+    if (profilePhoto) {
+      if (user.profile.profilePhoto) {
+        try {
+          const cloudinaryResponse = await cloudinary.uploader.destroy(user.profile.profilePhoto);
+        } catch (deleteError) {
+          return res.status(500).json({
+            message: "Error deleting old profile photo from Cloudinary.",
+            success: false,
+            error: deleteError.message,
+          });
+        }
+      }
+
       try {
         const fileUri = getDataUri(profilePhoto[0]);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
         user.profile.profilePhoto = cloudResponse.secure_url;
       } catch (uploadError) {
         return res.status(500).json({
-          message: "Error uploading profile photo to Cloudinary.",
+          message: "Error uploading new profile photo to Cloudinary.",
           success: false,
           error: uploadError.message,
         });
@@ -276,7 +289,19 @@ export const updateProfile = async (req, res) => {
     }
 
     // Handle resume upload
-    if (resume[0]) {
+    if (resume) {
+      if (user.profile.resume) {
+        try {
+          const cloudinaryResponse = await cloudinary.uploader.destroy(user.profile.resume);
+        } catch (deleteError) {
+          return res.status(500).json({
+            message: "Error deleting old resume from Cloudinary.",
+            success: false,
+            error: deleteError.message,
+          });
+        }
+      }
+
       try {
         const fileUri = getDataUri(resume[0]);
         const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { resource_type: "auto" });
@@ -284,7 +309,7 @@ export const updateProfile = async (req, res) => {
         user.profile.resumeOriginalName = resume[0].originalname;
       } catch (uploadError) {
         return res.status(500).json({
-          message: "Error uploading resume to Cloudinary.",
+          message: "Error uploading new resume to Cloudinary.",
           success: false,
           error: uploadError.message,
         });
