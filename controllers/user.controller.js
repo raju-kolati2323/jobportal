@@ -433,3 +433,60 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+export const deleteProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.id; // Get the authenticated user's ID from the request
+    let user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+
+    // Check if the user has a profile photo
+    if (user.profile.profilePhoto) {
+      try {
+        // Extract the public_id from the URL
+        const profilePhotoUrl = user.profile.profilePhoto;
+        const publicId = profilePhotoUrl.split('/').pop().split('.')[0]; // Get the public_id from the URL
+
+        // Delete the existing profile photo from Cloudinary using public_id
+        const cloudinaryResponse = await cloudinary.uploader.destroy(publicId);
+        
+        // Check if the deletion was successful
+        if (cloudinaryResponse.result !== "ok") {
+          throw new Error("Failed to delete profile photo from Cloudinary.");
+        }
+
+        // Remove the profile photo URL from the user's profile
+        user.profile.profilePhoto = null;
+        await user.save();
+
+        return res.status(200).json({
+          message: "Profile photo deleted successfully.",
+          success: true,
+        });
+      } catch (deleteError) {
+        return res.status(500).json({
+          message: "Error deleting profile photo from Cloudinary.",
+          success: false,
+          error: deleteError.message,
+        });
+      }
+    } else {
+      return res.status(404).json({
+        message: "No profile photo found to delete.",
+        success: false,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error.",
+      success: false,
+    });
+  }
+};
