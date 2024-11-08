@@ -48,18 +48,20 @@ export const register = async (req, res) => {
         success: false,
       });
     }
-    const file = req.file;
-    let cloudResponse;
+    let profilePhotoUrl = "";
 
-    if (file) {
+    if (req.files && req.files.profilePhoto) {
+      const profilePhoto = req.files.profilePhoto[0]; // Get the first file from the profilePhoto array
+      const fileUri = getDataUri(profilePhoto);
+      
       try {
-        const fileUri = getDataUri(file);
-        cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-          resource_type: "auto",
+        const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+          resource_type: "auto", // auto-detect file type
         });
+        profilePhotoUrl = cloudResponse.secure_url;
       } catch (uploadError) {
         return res.status(500).json({
-          message: "File upload failed",
+          message: "Profile photo upload failed.",
           success: false,
         });
       }
@@ -67,20 +69,28 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const newUser = await User.create({
       fullname,
       email,
       phoneNumber,
       password: hashedPassword,
       role,
       profile: {
-        profilePhoto: cloudResponse ? cloudResponse.secure_url : "",
+        profilePhoto: profilePhotoUrl,
       },
     });
 
     return res.status(201).json({
       message: "Account created successfully.",
       success: true,
+      user: {
+        _id: newUser._id,
+        fullname: newUser.fullname,
+        email: newUser.email,
+        phoneNumber: newUser.phoneNumber,
+        role: newUser.role,
+        profile: newUser.profile,
+      },
     });
   } catch (error) {
     return res.status(500).json({

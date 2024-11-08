@@ -16,6 +16,13 @@ const fileFilter = (req, file, cb) => {
     } else {
       cb(new Error('Only PDF or Word files are allowed for resume!'), false);
     }
+  }
+    else if (file.fieldname === 'logo') {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true); // Accept image files only for logo
+      } else {
+        cb(new Error('Only image files are allowed for company logo!'), false);
+      }
   } else {
     cb(new Error('Unexpected field'), false);
   }
@@ -27,7 +34,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB file limit
 }).fields([
   { name: 'profilePhoto', maxCount: 1 },
-  { name: 'resume', maxCount: 1 }
+  { name: 'resume', maxCount: 1 },
+  {name:'logo', maxCount:1},
 ]);
 
 export const singleUpload = upload;

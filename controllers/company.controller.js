@@ -74,18 +74,15 @@ export const updateCompany = async (req, res) => {
   try {
     const { name, description, website, location } = req.body;
 
-    const file = req.file;
+    const file = req.files && req.files.logo ? req.files.logo[0] : null;
     let logo;
-    // if (!file) {
-    //   return res.status(400).json({
-    //     message: "company logo is missing",
-    //     success: false,
-    //   });
-    // }
+    
     // idhar cloudinary ayega
     if (file) {
       const fileUri = getDataUri(file);
-      const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        resource_type: "auto",  // Let Cloudinary automatically detect file type
+      });
       logo = cloudResponse.secure_url; // Save the cloudinary URL for the logo
     }
 
