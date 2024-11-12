@@ -9,7 +9,7 @@ import jobRoute from "./routes/job.route.js";
 import applicationRoute from "./routes/application.route.js";
 import wishlistRoute from "./routes/wishlist.route.js";
 import passwordRouter from "./routes/forgotPassword.route.js";
-import paymentRouter from "./routes/payment.route.js";
+// import paymentRouter from "./routes/payment.route.js";
 
 
 dotenv.config({});
@@ -44,7 +44,7 @@ app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 app.use("/api/v1/wishlist", wishlistRoute);
 app.use("/api/v1/user", passwordRouter);
-app.use("/api/v1/payment", paymentRouter);
+// app.use("/api/v1/payment", paymentRouter);
 
 app.listen(PORT,()=>{
     connectDB();

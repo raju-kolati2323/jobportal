@@ -72,7 +72,7 @@ export const getCompanyById = async (req, res) => {
 };
 export const updateCompany = async (req, res) => {
   try {
-    const { name, description, website, location } = req.body;
+    const { name, companyType, description, website, location } = req.body;
 
     const file = req.files && req.files.logo ? req.files.logo[0] : null;
     let logo;
@@ -86,7 +86,7 @@ export const updateCompany = async (req, res) => {
       logo = cloudResponse.secure_url; // Save the cloudinary URL for the logo
     }
 
-    const updateData = { name, description, website, location };
+    const updateData = { name, companyType, description, website, location };
     
     if (logo) {
       updateData.logo = logo; // Add logo to the update data only if provided

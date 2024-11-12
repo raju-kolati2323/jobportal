@@ -2,7 +2,7 @@ import { Job } from "../models/job.model.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 // import { Payment } from "../models/payment.model.js";
-import { createPaymentOrder, verifyPayment } from "./payment.controller.js";
+// import { createPaymentOrder, verifyPayment } from "./payment.controller.js";
 
 // admin post krega job
 export const postJob = async (req, res) => {
@@ -110,27 +110,28 @@ export const postJob = async (req, res) => {
       position,
       company: companyId,
       created_by: userId,
-      status: "inactive", // Initially set to inactive, until payment is verified
+      status: "active", // Initially set to inactive, until payment is verified
     });
 
-  const paymentResponse = await createPaymentOrder({
-    jobId: job._id, // We don't have the job ID yet
-    userId: userId,
-  });
+  // const paymentResponse = await createPaymentOrder({
+  //   jobId: job._id, // We don't have the job ID yet
+  //   userId: userId,
+  // });
 
-  if (!paymentResponse.success) {
-    return res.status(400).json({
-      message: "Failed to initiate payment. Job not posted.",
-      success: false,
-    });
-  }
+  // if (!paymentResponse.success) {
+  //   return res.status(400).json({
+  //     message: "Failed to initiate payment. Job not posted.",
+  //     success: false,
+  //   });
+  // }
 
   // Step 3: Return the Razorpay orderId for payment processing
   return res.status(201).json({
-    message: "Payment initiated. Complete payment to post the job.",
-    orderId: paymentResponse.orderId,
-    jobId: job._id,
-    created_by: userId,
+    message: "Job posted successfully.",
+    // orderId: paymentResponse.orderId,
+    // jobId: job._id,
+    // created_by: userId,
+    job,
     success: true,
   });
 
@@ -143,32 +144,32 @@ export const postJob = async (req, res) => {
 }
 };
 
-// Verify payment and post job after successful payment
-export const verifyAndPostJob = async (req, res) => {
-try {
-  const { paymentId, orderId, signature, jobData } = req.body;
+// // Verify payment and post job after successful payment
+// export const verifyAndPostJob = async (req, res) => {
+// try {
+//   const { paymentId, orderId, signature, jobData } = req.body;
 
-  // Step 1: Verify the payment
-  const paymentVerificationResponse = await verifyPayment({
-    paymentId,
-    orderId,
-    signature,
-  });
+//   // Step 1: Verify the payment
+//   const paymentVerificationResponse = await verifyPayment({
+//     paymentId,
+//     orderId,
+//     signature,
+//   });
 
-  if (!paymentVerificationResponse.success) {
-    return res.status(400).json({
-      message: "Payment verification failed. Job not posted.",
-      success: false,
-    });
-  }
+//   if (!paymentVerificationResponse.success) {
+//     return res.status(400).json({
+//       message: "Payment verification failed. Job not posted.",
+//       success: false,
+//     });
+//   }
 
-  const job = await Job.create({ ...jobData, status: "active" });
-    return res.status(201).json({ message: "Job posted successfully.", job, success: true });
-  } catch (error) {
-    console.error("Error in verifyAndPostJob:", error);
-    return res.status(500).json({ message: "Internal server error", success: false });
-  }
-};
+//   const job = await Job.create({ ...jobData, status: "active" });
+//     return res.status(201).json({ message: "Job posted successfully.", job, success: true });
+//   } catch (error) {
+//     console.error("Error in verifyAndPostJob:", error);
+//     return res.status(500).json({ message: "Internal server error", success: false });
+//   }
+// };
 
 
 // admin can delete a job
