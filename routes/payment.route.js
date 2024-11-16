@@ -1,10 +1,7 @@
-// import express from "express"
-// import { createPaymentOrder, verifyPayment } from "../controllers/payment.controller.js";
-// import isAuthenticated from "../middlewares/isAuthenticated.js";
+import express from "express"
+import { verifyRazorpayPayment } from "../controllers/payment.controller.js";
+const router = express.Router();
+// router.post("/verify-payment", verifyRazorpayPayment);
+router.route("/verify-payment").post(verifyRazorpayPayment);
 
-// const router = express.Router();
-
-// router.route("/createOrder").post(isAuthenticated,createPaymentOrder)
-// router.route("/verifyPayment").post(isAuthenticated,verifyPayment);
-
-// export default router;
+export default router;

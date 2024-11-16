@@ -11,6 +11,5 @@ router.route("/get/:id").get(getJobById);
 router.route("/delete/:id").delete(deleteJob);
 router.route("/update/:id").patch(isAuthenticated, singleUpload, updateJob);
 router.route("/toggle-status/:id").patch(isAuthenticated, toggleJobStatus);
-// router.route("/verify").post(isAuthenticated, verifyAndPostJob);
 
 export default router;

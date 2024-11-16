@@ -1,8 +1,9 @@
 import { Job } from "../models/job.model.js";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
-// import { Payment } from "../models/payment.model.js";
-// import { createPaymentOrder, verifyPayment } from "./payment.controller.js";
+import { PaymentPlan } from "../models/payment.model.js";
+import { createPaymentOrder } from "./payment.controller.js";
+import { User } from "../models/user.model.js";
 
 // admin post krega job
 export const postJob = async (req, res) => {
@@ -19,7 +20,35 @@ export const postJob = async (req, res) => {
       position,
       companyId,
     } = req.body;
+
     const userId = req.id;
+
+    // Check if the user is a recruiter (admin)
+    const user = await User.findById(userId);
+    if (user.role !== 'recruiter') {
+      return res.status(403).json({
+        message: "Only recruiters can post jobs.",
+        success: false
+      });
+    }
+
+    // Get the user's active payment plan
+    const paymentPlan = await PaymentPlan.findOne({ adminId: userId, active: true }).sort({ expiryDate: -1 });
+    if (!paymentPlan || paymentPlan.expiryDate < new Date()) {
+      return res.status(400).json({
+        message: "No active payment plan found. Please subscribe to a plan to post jobs.",
+        success: false
+      });
+    }
+
+    // Check if the admin has exceeded the job posting limit for their plan
+    if (paymentPlan.jobsPosted >= paymentPlan.jobLimit && paymentPlan.jobLimit !== -1) {
+      return res.status(400).json({
+        message: "You have reached your job posting limit. Please renew your plan.",
+        success: false
+      });
+    }
+
     // Check for missing fields and return specific error messages
     if (!title) {
       return res.status(400).json({
@@ -42,7 +71,7 @@ export const postJob = async (req, res) => {
       });
     }
 
-    if(!qualification){
+    if (!qualification) {
       return res.status(400).json({
         message: "Qualification is missing",
         success: false,
@@ -97,7 +126,7 @@ export const postJob = async (req, res) => {
         success: false,
       });
     }
-  
+
     const job = await Job.create({
       title,
       description,
@@ -110,67 +139,43 @@ export const postJob = async (req, res) => {
       position,
       company: companyId,
       created_by: userId,
-      status: "active", // Initially set to inactive, until payment is verified
+      status: "active", // Initially set to active
     });
 
-  // const paymentResponse = await createPaymentOrder({
-  //   jobId: job._id, // We don't have the job ID yet
-  //   userId: userId,
-  // });
+    // Update the job posting count
+    if (paymentPlan.jobLimit !== -1) {
+      paymentPlan.jobsPosted += 1;
+      if (paymentPlan.jobsPosted >= paymentPlan.jobLimit) {
+        paymentPlan.active = false; // Expire the plan if limit reached
+      }
+      await paymentPlan.save();
+    }
 
-  // if (!paymentResponse.success) {
-  //   return res.status(400).json({
-  //     message: "Failed to initiate payment. Job not posted.",
-  //     success: false,
-  //   });
-  // }
+    let razorpayOrderId = null;
+    try {
+      if (paymentPlan.jobLimit === paymentPlan.jobsPosted) {
+        const order = await createPaymentOrder(paymentPlan.planType);
+        razorpayOrderId = order.id;
+        console.log("Razorpay order created:", razorpayOrderId);
+      }
+    } catch (error) {
+      console.error("Error creating Razorpay order:", error);
+    }
 
-  // Step 3: Return the Razorpay orderId for payment processing
-  return res.status(201).json({
-    message: "Job posted successfully.",
-    // orderId: paymentResponse.orderId,
-    // jobId: job._id,
-    // created_by: userId,
-    job,
-    success: true,
-  });
-
-} catch (error) {
-  console.error("Error in postJob:", error);
-  return res.status(500).json({
-    message: "Internal server error",
-    success: false,
-  });
-}
+    // Create a payment order for the new plan or when renewal is needed
+    return res.status(201).json({
+      message: "Job posted successfully.",
+      job,
+      razorpayOrderId,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
 };
-
-// // Verify payment and post job after successful payment
-// export const verifyAndPostJob = async (req, res) => {
-// try {
-//   const { paymentId, orderId, signature, jobData } = req.body;
-
-//   // Step 1: Verify the payment
-//   const paymentVerificationResponse = await verifyPayment({
-//     paymentId,
-//     orderId,
-//     signature,
-//   });
-
-//   if (!paymentVerificationResponse.success) {
-//     return res.status(400).json({
-//       message: "Payment verification failed. Job not posted.",
-//       success: false,
-//     });
-//   }
-
-//   const job = await Job.create({ ...jobData, status: "active" });
-//     return res.status(201).json({ message: "Job posted successfully.", job, success: true });
-//   } catch (error) {
-//     console.error("Error in verifyAndPostJob:", error);
-//     return res.status(500).json({ message: "Internal server error", success: false });
-//   }
-// };
-
 
 // admin can delete a job
 export const deleteJob = async (req, res) => {
@@ -189,7 +194,7 @@ export const deleteJob = async (req, res) => {
     return res.status(200).json({
       message: "Job deleted successfully.",
       success: true,
-      jobId: jobId, 
+      jobId: jobId,
     });
   } catch (error) {
     console.error("Error in deleteJob:", error);
@@ -261,6 +266,10 @@ export const getJobById = async (req, res) => {
 export const getAdminJobs = async (req, res) => {
   try {
     const adminId = req.id;
+  
+    // Get the admin's active payment plan
+    const paymentPlan = await PaymentPlan.findOne({ adminId, active: true }).sort({ expiryDate: -1 });
+
     const jobs = await Job.find({ created_by: adminId }).populate({
       path: "company",
       createdAt: -1,
@@ -273,6 +282,7 @@ export const getAdminJobs = async (req, res) => {
     }
     return res.status(200).json({
       jobs,
+      paymentPlan, 
       success: true,
     });
   } catch (error) {
